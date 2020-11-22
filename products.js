@@ -11,7 +11,7 @@ const products = [
 
   {
     id: 2,
-    name: "ukeulel with dots ",
+    name: "ukulele with dots ",
     slug: "ukulele-with-dots",
     description: "small size color:waite with colored dots",
     price: 40,

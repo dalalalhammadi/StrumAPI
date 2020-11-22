@@ -37,6 +37,17 @@ app.post("/products", (req, res) => {
   res.status(201).json(newUkulele);
 });
 
+app.put("/products/:ukuleleId", (req, res) => {
+  const { ukuleleId } = req.params;
+  const foundUkulele = products.find((ukulele) => ukulele.id === +ukuleleId);
+  if (foundUkulele) {
+    for (const key in req.body) foundUkulele[key] = req.body[key];
+    res.status(204).end();
+  } else {
+    res.status(404).json({ massage: "ukulele not found" });
+  }
+});
+
 app.listen(8000, () => {
   console.log(" the application is running on localhost:8000");
 });
