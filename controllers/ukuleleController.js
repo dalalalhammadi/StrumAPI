@@ -1,36 +1,48 @@
-let products = require("../products");
-const slugify = require("slugify");
+const { Ukulele } = require("../db/models");
+const { Music } = require("../db/models");
 
-exports.ukuleleList = (req, res) => {
-  res.json(products);
-};
-
-exports.ukuleleDelete = (req, res) => {
-  const { ukuleleId } = req.params;
-  const foundUkulele = products.find((ukulele) => ukulele.id === +ukuleleId);
-  if (foundUkulele) {
-    products = products.filter((ukulele) => ukulele !== foundUkulele);
-    res.status(204).end();
-  } else {
-    res.status(404).json({ massage: "Ukulele not found" });
+exports.fetchUkulele = async (ukuleleId, next) => {
+  try {
+    const ukulele = await Ukulele.findByPk(ukuleleId);
+    return ukulele;
+  } catch (error) {
+    next(error);
   }
 };
 
-exports.ukuleleCreate = (req, res) => {
-  const id = products[products.lenth - 1].id + 1;
-  const slug = slugify(req.body.name, { lower: true });
-  const newUkulele = { id, slug, ...req.body };
-  products.push(newUkulele);
-  res.status(201).json(newUkulele);
+exports.ukuleleList = async (req, res, next) => {
+  try {
+    const ukulelels = await Ukulele.findAll({
+      attributes: { exclude: ["MusicId", "createdAt", "updatedAt"] },
+      include: {
+        model: Music,
+        as: "music",
+        attributes: ["name"],
+      },
+    });
+    res.json(ukulelels);
+  } catch (error) {
+    next(error);
+  }
 };
 
-exports.ukuleleUpdate = (req, res) => {
-  const { ukuleleId } = req.params;
-  const foundUkulele = products.find((ukulele) => ukulele.id === +ukuleleId);
-  if (foundUkulele) {
-    for (const key in req.body) foundUkulele[key] = req.body[key];
+exports.ukuleleDelete = async (req, res, next) => {
+  try {
+    await req.ukulele.destroy();
     res.status(204).end();
-  } else {
-    res.status(404).json({ massage: "ukulele not found" });
+  } catch (ree) {
+    next(err);
+  }
+};
+
+exports.ukuleleUpdate = async (req, res, next) => {
+  try {
+    if (req.file) {
+      req.body.image = `http://${req.get("host")}/media/${req.file.filename}`;
+    }
+    await req.ukulele.update(req.body);
+    res.status(204).end();
+  } catch (err) {
+    next(error);
   }
 };
